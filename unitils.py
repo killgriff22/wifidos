@@ -10,7 +10,7 @@ def will_fit(len):
         return True
     else:
         return False
-def multi_deauth(interface:wlan_interface,common_channels:dict):
+def multi_deauth(interface:wlan_interface,common_channels:dict,args:list):
     interface.Stop_interface()
     BSSIDs=[]
     for channel in common_channels.keys():
@@ -18,13 +18,16 @@ def multi_deauth(interface:wlan_interface,common_channels:dict):
             BSSIDs.append(bssid(MAC,channel))
     while True:
         for BSSID in BSSIDs:
-            BSSID.Deauth(interface)
+            BSSID.Deauth(interface,int(args[args.index("-a")+1]) if "-a" in args else 0)
 def countdown_sleep(time:int,reason:str=None):
     for i in range(time):
         print(f"{reason if reason else 'continue'} in {time-i}")
         sleep(1)
 def exit():
-    os.remove("BSSIDs-01.csv")
+    try:
+        os.remove("BSSIDs-01.csv")
+    except:
+        print("Could not remove BSSIDs-01.csv")
     realexit()
 def get_interfaces():
     wifi_interfaces = subprocess.check_output("iwconfig").decode().split("\n")

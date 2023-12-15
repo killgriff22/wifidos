@@ -31,14 +31,15 @@ class wlan_interface:
             self.interface=self.interface+"mon"
         self.channel=channel if not channel == self.channel else self.channel
 class bssid:
-    def __init__(self,MAC,channel:int=None) -> None:
+    def __init__(self,MAC,channel:int or str=None,name:str=None) -> None:
         self.MAC = MAC
         self.channel = channel
-    def configure_interface(self,interface:wlan_interface,channel:int=None):
+        self.name = name
+    def configure_interface(self,interface:wlan_interface,channel:int or str=None):
         #interface.Stop_interface()
         interface.Start_interface(channel if channel and not channel==self.channel else self.channel)
         if channel and not channel==self.channel: self.channel == channel
-    def Deauth(self,interface:wlan_interface,amount=1):
+    def Deauth(self,interface:wlan_interface,amount:int=1):
         if not interface.channel == self.channel:
             self.configure_interface(interface)
         print(f"DeAuthing {self.MAC} {self.channel} on interface {interface.interface}")
